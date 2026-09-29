@@ -110,3 +110,33 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+// kernel/sysproc.c  — 파일 맨 아래에 추가
+uint64
+sys_va2pa(void)
+{
+  uint64 va;
+  pte_t *pte;
+  struct proc *p = myproc();
+
+  argaddr(0, &va);
+  if (va >= MAXVA)
+    return 0;
+
+  // TODO ①
+  printk("va %p : L2=%d L1=%d L0=%d off=0x%x\n",
+       (void *)va,
+       (int)PX(2, va),
+       (int)PX(1, va),
+       (int)PX(0, va),
+       (unsigned int)(va & (PGSIZE - 1)));
+
+  pte = walk(p->pagetable, va, 0);
+  
+  if (pte == 0 || (*pte & PTE_V) == 0)
+    return 0;
+  if ((*pte & PTE_U) == 0)
+    return 0;
+
+  // TODO ②
+  return PTE2PA(*pte) + (va & (PGSIZE - 1));
+}

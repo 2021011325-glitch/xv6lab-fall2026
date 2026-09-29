@@ -489,3 +489,36 @@ ismapped(pagetable_t pagetable, uint64 va)
   }
   return 0;
 }
+
+
+// Print the valid PTEs of one page-table page,
+// then descend into lower-level tables.
+static void
+vmprint_level(pagetable_t pagetable, int level)
+{
+  for (int i = 0; i < 512; i++) {
+    pte_t pte = pagetable[i];
+
+    if ((pte & PTE_V) == 0)
+      continue;
+
+    // L2: 1번, L1: 2번, L0: 3번
+    for (int d = level; d <= 2; d++)
+      printk(" ..");
+
+    printk("%d: pte %p pa %p\n",
+           i, (void *)pte, (void *)PTE2PA(pte));
+
+    // R/W/X가 모두 0이면 최종 데이터 페이지가 아니라
+    // 다음 단계 페이지 테이블을 가리키는 중간 PTE
+    if (level > 0 && (pte & (PTE_R | PTE_W | PTE_X)) == 0)
+      vmprint_level((pagetable_t)PTE2PA(pte), level - 1);
+  }
+}
+
+void
+vmprint(pagetable_t pagetable)
+{
+  printk("page table %p\n", (void *)pagetable);
+  vmprint_level(pagetable, 2);
+}
