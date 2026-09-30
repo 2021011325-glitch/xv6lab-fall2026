@@ -511,7 +511,7 @@ vmprint_level(pagetable_t pagetable, int level)
 
     // R/W/X가 모두 0이면 최종 데이터 페이지가 아니라
     // 다음 단계 페이지 테이블을 가리키는 중간 PTE
-    if (level > 0 && (pte & (PTE_R | PTE_W | PTE_X)) == 0)
+    if (level > 0)
       vmprint_level((pagetable_t)PTE2PA(pte), level - 1);
   }
 }
