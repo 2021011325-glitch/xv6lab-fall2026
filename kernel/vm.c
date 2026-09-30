@@ -509,8 +509,8 @@ vmprint_level(pagetable_t pagetable, int level)
     printk("%d: pte %p pa %p\n",
            i, (void *)pte, (void *)PTE2PA(pte));
 
-    // R/W/X가 모두 0이면 최종 데이터 페이지가 아니라
-    // 다음 단계 페이지 테이블을 가리키는 중간 PTE
+    // L2와 L1에서는 다음 단계 페이지 테이블로 내려간다.
+    // L0에서는 실제 페이지를 가리키므로 더 이상 재귀 호출하지 않는다.
     if (level > 0)
       vmprint_level((pagetable_t)PTE2PA(pte), level - 1);
   }
